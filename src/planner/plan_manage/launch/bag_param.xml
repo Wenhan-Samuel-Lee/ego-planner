@@ -1,0 +1,41 @@
+<launch>
+  <arg name="map_size_x_"/>
+  <arg name="map_size_y_"/>
+  <arg name="map_size_z_"/>
+
+  <arg name="odometry_topic"/>
+  <arg name="camera_pose_topic"/>
+  <arg name="depth_topic"/>
+  <arg name="cloud_topic"/>
+
+  <arg name="cx"/>
+  <arg name="cy"/>
+  <arg name="fx"/>
+  <arg name="fy"/>
+
+  <arg name="max_vel"/>
+  <arg name="max_acc"/>
+  <arg name="planning_horizen"/>
+
+  <arg name="point_num"/>
+  <arg name="point0_x"/>
+  <arg name="point0_y"/>
+  <arg name="point0_z"/>
+  <arg name="point1_x"/>
+  <arg name="point1_y"/>
+  <arg name="point1_z"/>
+  <arg name="point2_x"/>
+  <arg name="point2_y"/>
+  <arg name="point2_z"/>
+  <arg name="point3_x"/>
+  <arg name="point3_y"/>
+  <arg name="point3_z"/>
+  <arg name="point4_x"/>
+  <arg name="point4_y"/>
+  <arg name="point4_z"/>
+
+  <arg name="flight_type"/>
+
+  <!-- main node -->
+
+</launch>
