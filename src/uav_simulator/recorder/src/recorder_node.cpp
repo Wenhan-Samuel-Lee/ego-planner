@@ -10,10 +10,11 @@
  */
 void depthmapCallback(const sensor_msgs::ImageConstPtr& msg)
 {
+  ROS_INFO("received callback\n");
   try
   {
     cv::imshow("view", cv_bridge::toCvShare(msg, "bgr8")->image);
-    cv::waitKey(30);
+    cv::waitKey(0);
   }
   catch (cv_bridge::Exception& e)
   {
@@ -31,7 +32,7 @@ int main(int argc, char **argv)
   cv::startWindowThread();
   
   image_transport::ImageTransport it(n);
-  
+  ROS_INFO("started node\n");
   image_transport::Subscriber sub = it.subscribe("/pcl_render_node/depth", 1000, depthmapCallback);
 
   ros::spin();
