@@ -1,5 +1,6 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+#include "quadrotor_msgs/PositionCommand.h"
 
 #include <image_transport/image_transport.h>
 #include <opencv2/highgui/highgui.hpp>
@@ -26,6 +27,28 @@ void depthmapCallback(const sensor_msgs::ImageConstPtr& msg)
   }
 }
 
+void outputCallback(const quadrotor_msgs::PositionCommand& cmd) {
+  ROS_INFO("[POS CMD %d: [%f, %f, %f], [%f, %f, %f], [%f, %f, %f], yaw: %f, %f\n", 
+    // cmd.header.stamp,
+    cmd.trajectory_id,
+
+    cmd.position.x,
+    cmd.position.y,
+    cmd.position.z,
+
+    cmd.velocity.x,
+    cmd.velocity.y,
+    cmd.velocity.z,
+
+    cmd.acceleration.x,
+    cmd.acceleration.y,
+    cmd.acceleration.z,
+
+    cmd.yaw,
+    cmd.yaw_dot
+  );
+}
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "recorder");
@@ -39,6 +62,7 @@ int main(int argc, char **argv)
   ROS_INFO("started node\n");
   image_transport::Subscriber sub = it.subscribe("/pcl_render_node/depth", 1000, depthmapCallback);
 
+  ros::Subscriber outputSup = n.subscribe("/planning/pos_cmd", 100, outputCallback);
   ros::spin();
 
   return 0;
