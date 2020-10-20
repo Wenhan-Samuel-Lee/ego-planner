@@ -52,8 +52,31 @@ void outputCallback(const quadrotor_msgs::PositionCommand& cmd) {
   );
 }
 
-void callback(const ImageConstPtr& image, const PositionCommand& pos_cmd) {
-	
+void callback(const sensor_msgs::ImageConstPtr& msg, const quadrotor_msgs::PositionCommand& cmd) {
+
+  // Write the contents of these two messages to a CSV file for training
+  // Right now, just use every 100 pixels arbitrarily in the image, later on we need to run all of through some other sort of filter
+  // Want to use two CSV files, one for input and one for output
+  std::ofstream outputFile;
+  std::ofstream imageFile;
+  
+  outputFile.open("output.csv");
+  outputFile << itoa(cmd.position.x) + "," + itoa(cmd.position.y) + "," + itoa(cmd.position.z) + "," + 
+            itoa(cmd.velocity.x) + "," + itoa(cmd.velocity.y) + "," + itoa(cmd.velocity.z) + "," + 
+            itoa(cmd.acceleration.x) + "," + itoa(cmd.acceleration.y) + "," + itoa(cmd.acceleration.z) + "," + 
+            itoa(cmd.yaw) + "," + itoa(cmd.yaw_dot) + "," + itoa(cmd.kx[0]) + "," + itoa(cmd.kx[1]) + "," + 
+            itoa(cmd.kx[2]) + "," + itoa(cmd.kv[0]) + "," + itoa(cmd.kv[1]) + "," + itoa(cmd.kv[2]) + "\n";
+  outputFile.close();
+
+  imageFile.open("image.csv");
+  int arraySize = sizeof(msg.data) / sizeof(msg.data[0]);
+  for(int i = 0; i < arraySize - 100; i += 100) {
+    imageFile << itoa(msg.data[i]) + ",";
+  }
+  imageFile << itoa(msg.data[arraySize - 1]) + "\n";
+  imageFile.close();
+
+  return 0;
 }
 
 int main(int argc, char **argv)
