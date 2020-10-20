@@ -3,6 +3,9 @@
 #include "quadrotor_msgs/PositionCommand.h"
 
 #include <image_transport/image_transport.h>
+#include <message_filters/subscriber.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
 
@@ -49,6 +52,10 @@ void outputCallback(const quadrotor_msgs::PositionCommand& cmd) {
   );
 }
 
+void callback(const ImageConstPtr& image, const PositionCommand& pos_cmd) {
+	
+}
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "recorder");
@@ -63,6 +70,13 @@ int main(int argc, char **argv)
   image_transport::Subscriber sub = it.subscribe("/pcl_render_node/depth", 1000, depthmapCallback);
 
   ros::Subscriber outputSup = n.subscribe("/planning/pos_cmd", 100, outputCallback);
+
+  message_filters::Subscriber<Image> = image_sub(n, "/pcl_render_node/depth", 1);
+  message_filters::Subscriber<PositionCommand> = pos_cmd_sub(n, "/planning/pos_cmd", 1);
+  typedef sync_policies::ApproximateTime<Image, PositionCommand> policy;
+  Synchronizer<policy> sync(policy(10), image_sub, pos_cmd_sub);
+  sync.registerCallback(boost::bind(&callback, _1, _2));
+
   ros::spin();
 
   return 0;
