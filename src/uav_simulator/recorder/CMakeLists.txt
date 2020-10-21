@@ -110,7 +110,7 @@ FIND_PACKAGE( OpenCV REQUIRED )                              # 环境变量中�
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES recorder
-  CATKIN_DEPENDS roscpp sensor_msgs cv_bridge image_transport quadrotor_msgs roslib
+  CATKIN_DEPENDS roscpp sensor_msgs cv_bridge image_transport quadrotor_msgs roslib message_filters geometry_msgs nav_msgs
   DEPENDS system_lib
 )
 
