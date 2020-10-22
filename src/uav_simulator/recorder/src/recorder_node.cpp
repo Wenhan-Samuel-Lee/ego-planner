@@ -123,10 +123,8 @@ void callback(const sensor_msgs::ImageConstPtr& msg, const quadrotor_msgs::Posit
             std::to_string(cmd->yaw) + "," + std::to_string(cmd->yaw_dot) + "\n";
   
     inputFile << 
-            std::to_string(current_goal.position.x) + "," + 
-            std::to_string(current_goal.position.y) + "," +
-            std::to_string(odom->pose.pose.position.x) + "," + 
-            std::to_string(odom->pose.pose.position.y) + "," +
+            std::to_string(current_goal.position.x - odom->pose.pose.position.x) + "," + 
+            std::to_string(current_goal.position.y - odom->pose.pose.position.y) + "," +
             std::to_string(odom->pose.pose.position.z) + "," +
             std::to_string(odom->pose.pose.orientation.x) + "," + 
             std::to_string(odom->pose.pose.orientation.y) + "," +
