@@ -11,6 +11,8 @@
 #include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Odometry.h>
+#include <tf/transform_datatypes.h>
+#include <math.h>
 
 #include <stdlib.h>
 #include <iostream>
@@ -79,6 +81,25 @@ bool goal_set = false;
 //   );
 // }
 
+void inputCallback(const nav_msgs::Odometry::ConstPtr& odom) {
+
+    ROS_INFO("[POS CMD: [%f, %f, %f], [%f, %f, %f, %f]\n", 
+    odom->pose.pose.position.x,
+    odom->pose.pose.position.y,
+    odom->pose.pose.position.z,
+    
+    odom->pose.pose.orientation.x,
+    odom->pose.pose.orientation.y,
+    odom->pose.pose.orientation.z,
+    odom->pose.pose.orientation.w);
+
+    tf::Quaternion q(odom->pose.pose.orientation.x, odom->pose.pose.orientation.y, odom->pose.pose.orientation.z, odom->pose.pose.orientation.w);
+    tf::Matrix3x3 m(q);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+    std::cout << "Roll: " << roll << ", Pitch: " << pitch << ", Yaw: " << yaw << std::endl;
+}
+
 void goalCallback(const geometry_msgs::PoseStamped& goal) {
   current_goal = goal.pose;
   ROS_INFO("[GOAL CMD: [%f, %f, %f], [%f, %f, %f, %f]\n", 
@@ -115,6 +136,13 @@ void callback(const sensor_msgs::ImageConstPtr& msg, const quadrotor_msgs::Posit
     odom->pose.pose.orientation.w);
 
   
+  tf::Quaternion q(odom->pose.pose.orientation.x, odom->pose.pose.orientation.y, odom->pose.pose.orientation.z, odom->pose.pose.orientation.w);
+    tf::Matrix3x3 m(q);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+    std::cout << "Roll: " << roll << ", Pitch: " << pitch << ", Yaw: " << yaw << std::endl;
+
+
   if (save && goal_set && odom != nullptr) {
     outputFile << 
             std::to_string(cmd->position.x) + "," + std::to_string(cmd->position.y) + "," + std::to_string(cmd->position.z) + "," + 
@@ -122,20 +150,39 @@ void callback(const sensor_msgs::ImageConstPtr& msg, const quadrotor_msgs::Posit
             std::to_string(cmd->acceleration.x) + "," + std::to_string(cmd->acceleration.y) + "," + std::to_string(cmd->acceleration.z) + "," + 
             std::to_string(cmd->yaw) + "," + std::to_string(cmd->yaw_dot) + "\n";
   
+    auto rel_y = (current_goal.position.y - odom->pose.pose.position.y);
+    auto rel_x =(current_goal.position.x - odom->pose.pose.position.x);
+    double angle = atan2(rel_y / rel_x) - yaw;
+    double distance = sqrt(rel_y * rel_y + rel_x * rel_x);
+
+    
+    
+    // TODO:: consider imbalance of samples at exactly 2 and effect on training performance
+    distance = distance > 2 ? 2 : distance; 
+
     inputFile << 
-            std::to_string(current_goal.position.x - odom->pose.pose.position.x) + "," + 
-            std::to_string(current_goal.position.y - odom->pose.pose.position.y) + "," +
-            std::to_string(odom->pose.pose.position.z) + "," +
-            std::to_string(odom->pose.pose.orientation.x) + "," + 
-            std::to_string(odom->pose.pose.orientation.y) + "," +
-            std::to_string(odom->pose.pose.orientation.z) + "," +
-            std::to_string(odom->pose.pose.orientation.w) + "," +
+            // std::to_string(current_goal.position.x - odom->pose.pose.position.x) + "," + 
+            // std::to_string(current_goal.position.y - odom->pose.pose.position.y) + "," +
+
+
+
+            // std::to_string(odom->pose.pose.position.z) + "," +
+            // std::to_string(odom->pose.pose.orientation.x) + "," + 
+            // std::to_string(odom->pose.pose.orientation.y) + "," +
+            // std::to_string(odom->pose.pose.orientation.z) + "," +
+            // std::to_string(odom->pose.pose.orientation.w) + "," +
+            std::to_string(distance) + "," + 
+            std::to_string(angle) + "," +
+            std::to_string(roll) + "," + 
+            std::to_string(pitch) + "," +
+            std::to_string(yaw) + "," +
+            // TODO:: consider the need to do frame transformations to the drone's coordinate frame with these
             std::to_string(odom->twist.twist.linear.x) + "," + 
             std::to_string(odom->twist.twist.linear.y) + "," +
             std::to_string(odom->twist.twist.linear.z) + "," +
             std::to_string(odom->twist.twist.angular.x) + "," + 
             std::to_string(odom->twist.twist.angular.y) + "," +
-            std::to_string(odom->twist.twist.angular.z) + "\n";
+            std::to_string(odom->twist.twist.angular.z) + "\n";    
   }
 
   // ROS_INFO("[POS CMD %d: [%f, %f, %f], [%f, %f, %f], [%f, %f, %f], yaw: %f, %f\n", 
@@ -195,21 +242,20 @@ int main(int argc, char **argv)
   ROS_INFO("started node\n");
   // image_transport::Subscriber sub = it.subscribe("/pcl_render_node/depth", 1000, depthmapCallback);
 
-  // ros::Subscriber outputSup = n.subscribe("/planning/pos_cmd", 100, outputCallback);
-
-
-  message_filters::Subscriber<sensor_msgs::Image> image_sub(n, "/pcl_render_node/depth", 10);
-  message_filters::Subscriber<quadrotor_msgs::PositionCommand> pos_cmd_sub(n, "/planning/pos_cmd", 10);
-  message_filters::Subscriber<nav_msgs::Odometry> odom_sub(n, "/visual_slam/odom", 10);
+  ros::Subscriber inputSub = n.subscribe("/visual_slam/odom", 100, inputCallback);
+  // ros::Subscriber outputSub = n.subscribe("/planning/pos_cmd", 100, outputCallback);
 
   ros::Subscriber goal_cmd_sub = n.subscribe("/move_base_simple/goal", 10, goalCallback);
 
+  // message_filters::Subscriber<sensor_msgs::Image> image_sub(n, "/pcl_render_node/depth", 10);
+  // message_filters::Subscriber<quadrotor_msgs::PositionCommand> pos_cmd_sub(n, "/planning/pos_cmd", 10);
+  // message_filters::Subscriber<nav_msgs::Odometry> odom_sub(n, "/visual_slam/odom", 10);
   
-  typedef sync_policies::ApproximateTime<sensor_msgs::Image, quadrotor_msgs::PositionCommand,nav_msgs::Odometry> Policy;
-  message_filters::Synchronizer<Policy> sync(Policy(100), image_sub, pos_cmd_sub, odom_sub);
+  // typedef sync_policies::ApproximateTime<sensor_msgs::Image, quadrotor_msgs::PositionCommand,nav_msgs::Odometry> Policy;
+  // message_filters::Synchronizer<Policy> sync(Policy(100), image_sub, pos_cmd_sub, odom_sub);
 
-  // message_filters::TimeSynchronizer<sensor_msgs::Image, quadrotor_msgs::PositionCommand> sync(image_sub, pos_cmd_sub, 100);
-  sync.registerCallback(boost::bind(&callback, _1, _2, _3));
+  // // message_filters::TimeSynchronizer<sensor_msgs::Image, quadrotor_msgs::PositionCommand> sync(image_sub, pos_cmd_sub, 100);
+  // sync.registerCallback(boost::bind(&callback, _1, _2, _3));
 
   ros::spin();
 
