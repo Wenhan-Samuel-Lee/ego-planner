@@ -44,7 +44,6 @@ class UAVSequence(Sequence):
             img_x[i % self.batch_size] = imagearr / 255
 
 #       return [img_x, np.array(batch_x)], np.array(batch_y)
-        return img_x, np.array(batch_y)
-        
+        return img_x, img_x
         
         
