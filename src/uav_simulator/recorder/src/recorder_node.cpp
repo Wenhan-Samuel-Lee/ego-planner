@@ -152,7 +152,7 @@ void callback(const sensor_msgs::ImageConstPtr& msg, const quadrotor_msgs::Posit
   
     auto rel_y = (current_goal.position.y - odom->pose.pose.position.y);
     auto rel_x =(current_goal.position.x - odom->pose.pose.position.x);
-    double angle = atan2(rel_y / rel_x) - yaw;
+    double angle = atan2(rel_y, rel_x) - yaw;
     double distance = sqrt(rel_y * rel_y + rel_x * rel_x);
 
     
@@ -227,7 +227,7 @@ void callback(const sensor_msgs::ImageConstPtr& msg, const quadrotor_msgs::Posit
 int main(int argc, char **argv)
 {
   using namespace message_filters;
-  ros::init(argc, argv, "recorder");
+  ros::init(argc, argv, "recorder_node");
 
   ros::NodeHandle n;
 
