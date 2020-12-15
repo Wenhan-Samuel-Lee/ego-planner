@@ -67,15 +67,15 @@
       <!-- attenuation:   for fractal attenuation
                               typical: 0.0 ~ 0.5 -->
 
-      <param name="complexity"    type="double" value="0.05"/>
+      <param name="complexity"    type="double" value="0.02"/>
       <param name="fill"          type="double" value="0.06"/>
-      <param name="fractal"       type="int"    value="1"/>
+      <param name="fractal"       type="int"    value="0"/>
       <param name="attenuation"   type="double" value="0.1"/>
 
       <!--    <param name="type" type="int" value="2"/>-->
       <param name="width_min"         type="double" value="0.6"/>
       <param name="width_max"         type="double" value="1.5"/>
-      <param name="obstacle_number"   type="int"    value="5"/>
+      <param name="obstacle_number"   type="int"    value="20"/>
   </node>
 
   <node pkg="so3_quadrotor_simulator" type="quadrotor_simulator_so3" name="quadrotor_simulator_so3" output="screen">
@@ -118,7 +118,7 @@
  
   <node pkg="odom_visualization" name="odom_visualization" type="odom_visualization" output="screen">
         <remap from="~odom" to="/visual_slam/odom"/>
-        <param name="color/a" value="1.0"/>    
+        <param name="color/a" value="1.0"/>
         <param name="color/r" value="0.0"/>        
         <param name="color/g" value="0.0"/>        
         <param name="color/b" value="0.0"/>       
