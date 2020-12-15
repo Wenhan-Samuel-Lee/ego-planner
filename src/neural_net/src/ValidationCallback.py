@@ -6,4 +6,6 @@ class ValidationCallback(Callback):
         self.xy_validation = xy_validation
     
     def on_epoch_end(self, epoch, logs=None):
-       self.model.evaluate(self.xy_validation)
+        self.model.evaluate(self.xy_validation)
+    
+    
